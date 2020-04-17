@@ -12,7 +12,11 @@ from reportlab.rl_config import *
 from datetime import datetime
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+import moment
 
+# helper
+def format_money (num):
+    return '{:,}'.format(num)
 # styles
 h1 = PS(name='Heading1',
         fontSize=14,
@@ -21,9 +25,15 @@ h2 = PS(name='Heading2',
         fontSize=14,
         leading=16)
 
+small = PS(name='Heading2',
+        fontSize=15,
+        leading=16)
+
 class income_report:
-    from_date = '2020-01-01'
-    to_date = '2020-04-01'
+    print("From Date (YYYY-MM-DD):")
+    from_date = input() #'2020-01-01'
+    print("To Date (YYYY-MM-DD):")
+    to_date = input() #'2020-04-01'
  
     fileName = f'./income_reports/report.{from_date} to {to_date}.pdf'
     pdf = canvas.Canvas(fileName, pagesize=A4)
@@ -76,22 +86,26 @@ class income_report:
     def draw_income_table(self,accounts_data, total_income):
         keys = []
         values = []
+        currency = []
         for key in accounts_data:
             keys.append(key)
-            values.append(str(accounts_data[key]).capitalize() + " EGP")
+            values.append(Paragraph(f"<para alignment=center>{format_money(accounts_data[key])}</para>", small))
+            currency.append("EGP")
 
+        # append the total earned to the end of the table
         keys.append('Total')
-        values.append(str(total_income) + " EGP")
+        values.append(Paragraph(f"<para alignment=center>{format_money(total_income)}</para>", small))
+        currency.append("EGP")
+        
         # List of Lists
         data = [
             keys,
-            values
+            values,
+            currency
         ]
-        table = Table(data)
+        table = Table(data,)
 
         # add style
-
-
         style = TableStyle([
             ('BACKGROUND', (0, 0), (3, 0), colors.HexColor('#c22532')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
@@ -99,9 +113,8 @@ class income_report:
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('LINEBEFORE', (2, 1), (2, -1), 2, colors.black),
             ('LINEABOVE', (0, 2), (-1, 2), 2, colors.white),
-
             ('FONTNAME', (0, 0), (-1, 0), 'Courier-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 14),
+            ('FONTSIZE', (0, 0), (-1, 0), 17),
             ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
 
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
@@ -113,13 +126,13 @@ class income_report:
         # 2) Alternate backgroud color
         rowNumb = len(data)
         for i in range(1, rowNumb):
-            # if i % 2 == 0:
-            #     bc = colors.burlywood
-            # else:
-            #     bc = colors.beige
+            if i % 2 == 0:
+                bc = colors.beige
+            else:
+                bc = colors.white
 
             ts = TableStyle(
-                [('BACKGROUND', (0, i), (-1, i), colors.white)]
+                [('BACKGROUND', (0, i), (-1, i), bc)]
             )
             table.setStyle(ts)
 
@@ -137,7 +150,7 @@ class income_report:
         table.setStyle(ts)
         
         table.wrapOn(self.pdf, 50*mm, 50*mm)
-        table.drawOn(self.pdf, 78*mm, 250*mm)
+        table.drawOn(self.pdf, 70*mm, 235*mm)
 
     def draw_chart_bar(self, bar_data):
         # sort the amounts by the largest
@@ -160,21 +173,44 @@ class income_report:
         bc.categoryAxis.categoryNames = bar_data['clients']
         bc.valueAxis.valueStep = 1000 
         drawing.add(bc)
-        renderPDF.draw(drawing, self.pdf, 25*mm, 100*mm)
+        renderPDF.draw(drawing, self.pdf, 30*mm, 100*mm)
 
     def draw_paragraphs(self):
+        # put months dates top left corner 
         months_selected = Paragraph(f"""
-            <para alignment=right>
-                <b>{self.from_date}</b>
-                <b>{self.to_date}</b>
+            <para alignment=left>
+                <b>From {moment.date(self.from_date).format('D/M/YYYY')} ({moment.date(self.from_date).format('dddd, MMMM')})</b>
+                <br/>
+                <b>To {moment.date(self.to_date).format('D/M/YYYY')} ({moment.date(self.to_date).format('dddd, MMMM')})</b>
             </para>
-        """, h2)
-        months_selected.wrapOn(self.pdf, 50*mm, 50*mm)
-        months_selected.drawOn(self.pdf, 5*mm, 275*mm)
+        """, small)
+        months_selected.wrapOn(self.pdf, 120*mm, 50*mm)
+        months_selected.drawOn(self.pdf, 15*mm, 275*mm)
+
+        # put timestamp when the report was generated
         timestamp = Paragraph(
-            f"<para alignment=right>{str(datetime.now())}</para>", h2)
-        timestamp.wrapOn(self.pdf, 50*mm, 50*mm)
-        timestamp.drawOn(self.pdf, 0*mm, 15*mm)
+            f"""
+            <para alignment=left>
+                <b>Generated at:</b>
+                <br/>
+                <br/>
+                <p>{moment.now().format('D/M/YYYY')} ({moment.now().format('dddd, MMMM')})</p>
+                <br/>
+                <p>{moment.now().format('hh:mm:ss A')}</p>
+            </para>
+            """, h1)
+        timestamp.wrapOn(self.pdf, 100*mm, 50*mm)
+        timestamp.drawOn(self.pdf, 15*mm, 15*mm)
+
+        # title for the income sources table
+        table_title = Paragraph(
+            f"""
+            <para alignment=center>
+                <b>Income Sources</b>
+            </para>
+            """, h1)
+        table_title.wrapOn(self.pdf, 90*mm, 50*mm)
+        table_title.drawOn(self.pdf, 62*mm, 263*mm)
 
     def generate (self):
         months_data = self.get_month_data()
