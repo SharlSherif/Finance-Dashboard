@@ -15,8 +15,12 @@ from reportlab.lib.units import mm
 import moment
 
 # helper
-def format_money (num):
+
+
+def format_money(num):
     return '{:,}'.format(num)
+
+
 # styles
 h1 = PS(name='Heading1',
         fontSize=14,
@@ -26,21 +30,23 @@ h2 = PS(name='Heading2',
         leading=16)
 
 small = PS(name='Heading2',
-        fontSize=15,
-        leading=16)
+           fontSize=15,
+           leading=16)
+
 
 class income_report:
     print("From Date (YYYY-MM-DD):")
-    from_date = input() #'2020-01-01'
+    from_date = input()  # '2020-01-01'
     print("To Date (YYYY-MM-DD):")
-    to_date = input() #'2020-04-01'
- 
-    fileName = f'./income_reports/report.{from_date} to {to_date}.pdf'
+    to_date = input()  # '2020-04-01'
+
+    fileName = f'./income_reports/Report - {from_date} to {to_date}.pdf'
     pdf = canvas.Canvas(fileName, pagesize=A4)
 
     def get_month_data(self):
-        file = pd.read_excel(
-            "E:/Projects/Finance-Organizer/history.xlsx", index_col="Date")
+        xls = pd.ExcelFile("E:/Projects/Finance-Organizer/finance.xlsx")
+
+        file = pd.read_excel(xls,sheet_name="Input", index_col="Date")
         data = file[self.from_date:self.to_date]
         conversion_rate_USD = 15.6
         table_income = {}
@@ -83,20 +89,22 @@ class income_report:
         print(bar)
         return {'bar': bar, 'accounts': accounts, 'total_income': total_income}
 
-    def draw_income_table(self,accounts_data, total_income):
+    def draw_income_table(self, accounts_data, total_income):
         keys = []
         values = []
         currency = []
         for key in accounts_data:
             keys.append(key)
-            values.append(Paragraph(f"<para alignment=center>{format_money(accounts_data[key])}</para>", small))
+            values.append(Paragraph(
+                f"<para alignment=center>{format_money(accounts_data[key])}</para>", small))
             currency.append("EGP")
 
         # append the total earned to the end of the table
         keys.append('Total')
-        values.append(Paragraph(f"<para alignment=center>{format_money(total_income)}</para>", small))
+        values.append(Paragraph(
+            f"<para alignment=center>{format_money(total_income)}</para>", small))
         currency.append("EGP")
-        
+
         # List of Lists
         data = [
             keys,
@@ -148,7 +156,7 @@ class income_report:
             ]
         )
         table.setStyle(ts)
-        
+
         table.wrapOn(self.pdf, 50*mm, 50*mm)
         table.drawOn(self.pdf, 70*mm, 235*mm)
 
@@ -171,12 +179,12 @@ class income_report:
         bc.categoryAxis.labels.dy = -2
         bc.categoryAxis.labels.angle = 30
         bc.categoryAxis.categoryNames = bar_data['clients']
-        bc.valueAxis.valueStep = 1000 
+        bc.valueAxis.valueStep = 1000
         drawing.add(bc)
         renderPDF.draw(drawing, self.pdf, 30*mm, 100*mm)
 
     def draw_paragraphs(self):
-        # put months dates top left corner 
+        # put months dates top left corner
         months_selected = Paragraph(f"""
             <para alignment=left>
                 <b>From {moment.date(self.from_date).format('D/M/YYYY')} ({moment.date(self.from_date).format('dddd, MMMM')})</b>
@@ -212,12 +220,14 @@ class income_report:
         table_title.wrapOn(self.pdf, 90*mm, 50*mm)
         table_title.drawOn(self.pdf, 62*mm, 263*mm)
 
-    def generate (self):
+    def generate(self):
         months_data = self.get_month_data()
-        self.draw_income_table(months_data['accounts'], months_data['total_income'])
+        self.draw_income_table(
+            months_data['accounts'], months_data['total_income'])
         self.draw_chart_bar(months_data['bar'])
         self.draw_paragraphs()
         self.pdf.save()
+
 
 report = income_report()
 report.generate()
