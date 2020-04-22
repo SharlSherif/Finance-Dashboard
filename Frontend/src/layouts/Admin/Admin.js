@@ -111,7 +111,7 @@ class Admin extends React.Component {
     return (
       <>
         <div className="wrapper">
-          <Sidebar
+          {/* <Sidebar
             {...this.props}
             routes={routes}
             bgColor={this.state.backgroundColor}
@@ -121,7 +121,7 @@ class Admin extends React.Component {
               imgSrc: logo
             }}
             toggleSidebar={this.toggleSidebar}
-          />
+          /> */}
           <div
             className="main-panel"
             ref="mainPanel"
