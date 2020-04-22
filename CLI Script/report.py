@@ -12,11 +12,8 @@ from reportlab.rl_config import *
 from datetime import datetime
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
-import moment
 
 # helper
-
-
 def format_money(num):
     return '{:,}'.format(num)
 
