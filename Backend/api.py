@@ -1,5 +1,6 @@
 import pandas as pd
 import moment
+import math
 from datetime import timedelta
 from datetime import datetime
 import seaborn as sns
@@ -26,9 +27,10 @@ def get_earnings_data(from_date, to_date):
     conversion_rate_USD = 15.6
     table_income = {}
     accounts = {}
+    table_rows=[]
     total_income = 0
     # want to come out with an income table
-    for index, row in data.iterrows():
+    for date, row in data.iterrows():
         # Filter income only
         if row['Type'] == 'Income' and row['Category'] != 'Repaid':
             source = row['Comments (Subcategories)']
@@ -55,13 +57,36 @@ def get_earnings_data(from_date, to_date):
             except:
                 accounts[account.lower().capitalize()] = income
 
+            date = f"{moment.date(date).format('DD/MM')} ({moment.date(date).format('dddd')})"
+            
+            filtered_row ={}
+            collected_row = {
+                'Date':date,
+                'Client Name': row['Comments (Subcategories)'],
+                'Amount':income,
+                'Category':row['Category'],
+                'Payment Gateway': row['Account'],
+                'Description/Notes': row['Description']
+            }
+
+            for key in collected_row:
+                value = collected_row[key]
+                if type(value) != str and isinstance(value, datetime) == False:
+                    if math.isnan(value) == False:
+                        print(key , value)
+                        filtered_row[key] = collected_row[key]
+                else:
+                    filtered_row[key] = collected_row[key]
+            
+            table_rows.append(filtered_row)
+
     total_income = round(total_income)
     bar = {'clients': [], 'amounts': []}
     for key in table_income:
         bar['clients'].append(key)
         bar['amounts'].append(table_income[key])
 
-    return {'bar': bar, 'accounts': accounts, 'total_income': total_income}
+    return {'bar': bar, 'accounts': accounts, 'total_income': total_income, 'table':table_rows}
 
 
 def get_expenses_data(from_date, to_date):
@@ -71,6 +96,7 @@ def get_expenses_data(from_date, to_date):
     categories = []
     sub_categories = []
     table_expenses = {}
+    table_rows = []
     # contains total amount of each day per that date (Month)
     # ? {'DATE':[Sat, Sun, Mon, Tue, Wed, Thu, Fri]}
     # ? {'DATE':[35, 25, 45, 67, 31, 712, 531]}
@@ -122,6 +148,27 @@ def get_expenses_data(from_date, to_date):
             table_expenses[category] = amount
 
             total_expenses += amount
+            
+            filtered_row ={}
+            collected_row = {
+                'Date':date,
+                'Category':row['Category'],
+                'Amount':amount,
+                'Payment Gateway': row['Account'],
+                'Comments': row['Comments (Subcategories)'],
+                'Description/Notes': row['Description']
+            }
+
+            for key in collected_row:
+                value = collected_row[key]
+                if type(value) != str:
+                    if math.isnan(value) == False:
+                        print(key , value)
+                        filtered_row[key] = collected_row[key]
+                else:
+                    filtered_row[key] = collected_row[key]
+
+            table_rows.append(filtered_row)
 
     total_expenses = round(total_expenses)
     print(heatmap_object)
@@ -132,7 +179,7 @@ def get_expenses_data(from_date, to_date):
         bar['categories'].append(key)
         bar['amounts'].append(table_expenses[key])
 
-    return {'sub_categories': sub_categories, 'bar': bar, 'total_expenses': total_expenses}
+    return {'sub_categories': sub_categories, 'bar': bar, 'table': table_rows,'total_expenses': total_expenses}
 
 
 @app.route('/api/earnings', methods=['GET'])

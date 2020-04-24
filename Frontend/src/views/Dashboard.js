@@ -87,17 +87,6 @@ class Dashboard extends React.Component {
       })
   }
 
-  async fetchEarningsData() {
-    await fetch(`${API}/earnings?from=2020-02-01&to=2020-02-29`)
-      .then(response => response.json())
-      .then(earningsData => {
-        console.log(earningsData)
-        this.setState({
-          earningsData
-        })
-      })
-  }
-
   async componentDidMount() {
     await this.fetchData()
   }
@@ -197,66 +186,32 @@ class Dashboard extends React.Component {
             </Col>
           </Row>
           <Row>
-            <Col lg="6" md="12">
+            <Col lg="6" md="6">
               <Card>
                 <CardHeader>
-                  <CardTitle tag="h4" style={{ margin: 0 }}>
-                    Simple Table
-                  </CardTitle>
+                  <CardTitle tag="h4" style={{ margin: 0 }}>Expenses Details</CardTitle>
                 </CardHeader>
                 <CardBody>
                   <Table className="tablesorter" responsive>
                     <thead className="text-primary">
                       <tr>
-                        <th>Name</th>
-                        <th>Country</th>
-                        <th>City</th>
-                        <th className="text-center">Salary</th>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Amount</th>
+                        <th>Payment Gateway</th>
+                        <th>Description</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>Dakota Rice</td>
-                        <td>Niger</td>
-                        <td>Oud-Turnhout</td>
-                        <td className="text-center">$36,738</td>
-                      </tr>
-                      <tr>
-                        <td>Minerva Hooper</td>
-                        <td>Curaçao</td>
-                        <td>Sinaai-Waas</td>
-                        <td className="text-center">$23,789</td>
-                      </tr>
-                      <tr>
-                        <td>Sage Rodriguez</td>
-                        <td>Netherlands</td>
-                        <td>Baileux</td>
-                        <td className="text-center">$56,142</td>
-                      </tr>
-                      <tr>
-                        <td>Philip Chaney</td>
-                        <td>Korea, South</td>
-                        <td>Overland Park</td>
-                        <td className="text-center">$38,735</td>
-                      </tr>
-                      <tr>
-                        <td>Doris Greene</td>
-                        <td>Malawi</td>
-                        <td>Feldkirchen in Kärnten</td>
-                        <td className="text-center">$63,542</td>
-                      </tr>
-                      <tr>
-                        <td>Mason Porter</td>
-                        <td>Chile</td>
-                        <td>Gloucester</td>
-                        <td className="text-center">$78,615</td>
-                      </tr>
-                      <tr>
-                        <td>Jon Porter</td>
-                        <td>Portugal</td>
-                        <td>Gloucester</td>
-                        <td className="text-center">$98,615</td>
-                      </tr>
+                      {!!earningsData.table && earningsData.table.map(e => (
+                        <tr>
+                          <td>{e.Date}</td>
+                          <td>{e['Client Name']}</td>
+                          <td>{e.Amount} EGP</td>
+                          <td>{e['Payment Gateway']}</td>
+                          <td>{!!e['Description/Notes'] && e['Description/Notes']}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </Table>
                 </CardBody>
@@ -265,61 +220,31 @@ class Dashboard extends React.Component {
             <Col lg="6" md="6">
               <Card>
                 <CardHeader>
-                  <CardTitle tag="h4" style={{ margin: 0 }}>Simple Table</CardTitle>
+                  <CardTitle tag="h4" style={{ margin: 0 }}>Expenses Details</CardTitle>
                 </CardHeader>
                 <CardBody>
                   <Table className="tablesorter" responsive>
                     <thead className="text-primary">
                       <tr>
-                        <th>Name</th>
-                        <th>Country</th>
-                        <th>City</th>
-                        <th className="text-center">Salary</th>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Payment Gateway</th>
+                        <th>Comments</th>
+                        <th >Description</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>Dakota Rice</td>
-                        <td>Niger</td>
-                        <td>Oud-Turnhout</td>
-                        <td className="text-center">$36,738</td>
-                      </tr>
-                      <tr>
-                        <td>Minerva Hooper</td>
-                        <td>Curaçao</td>
-                        <td>Sinaai-Waas</td>
-                        <td className="text-center">$23,789</td>
-                      </tr>
-                      <tr>
-                        <td>Sage Rodriguez</td>
-                        <td>Netherlands</td>
-                        <td>Baileux</td>
-                        <td className="text-center">$56,142</td>
-                      </tr>
-                      <tr>
-                        <td>Philip Chaney</td>
-                        <td>Korea, South</td>
-                        <td>Overland Park</td>
-                        <td className="text-center">$38,735</td>
-                      </tr>
-                      <tr>
-                        <td>Doris Greene</td>
-                        <td>Malawi</td>
-                        <td>Feldkirchen in Kärnten</td>
-                        <td className="text-center">$63,542</td>
-                      </tr>
-                      <tr>
-                        <td>Mason Porter</td>
-                        <td>Chile</td>
-                        <td>Gloucester</td>
-                        <td className="text-center">$78,615</td>
-                      </tr>
-                      <tr>
-                        <td>Jon Porter</td>
-                        <td>Portugal</td>
-                        <td>Gloucester</td>
-                        <td className="text-center">$98,615</td>
-                      </tr>
+                      {!!expensesData.table && expensesData.table.map(e => (
+                        <tr>
+                          <td>{e.Date}</td>
+                          <td>{e.Category}</td>
+                          <td>{e.Amount} EGP</td>
+                          <td>{e['Payment Gateway']}</td>
+                          <td>{e.Comments}</td>
+                          <td>{!!e['Description/Notes'] && e['Description/Notes']}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </Table>
                 </CardBody>
