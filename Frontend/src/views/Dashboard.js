@@ -20,7 +20,8 @@ import React from "react";
 import classNames from "classnames";
 // react plugin used to create charts
 import { Line, Bar } from "react-chartjs-2";
-
+import Select from 'react-select'
+import moment from 'moment'
 // reactstrap components
 import {
   Button,
@@ -57,8 +58,20 @@ class Dashboard extends React.Component {
     this.state = {
       bigChartData: "data1",
       expensesData: {},
-      earningsData: {}
+      earningsData: {},
+      revenue: 0,
+      percentage_spent: 0,
+      percentage_earned: 0,
+      isLoading: true,
+      date: {
+        from: '2020-01-01',
+        to: '2020-01-31'
+      }
     };
+  }
+
+  async componentDidMount() {
+    await this.fetchData(this.state.date.from, this.state.date.to)
   }
 
   setBgChartData = name => {
@@ -67,36 +80,157 @@ class Dashboard extends React.Component {
     });
   };
 
-  async fetchData() {
-    await fetch(`${API}/dashboard?from=2020-02-01&to=2020-02-29`)
-      .then(response => response.json())
+  async fetchData(from, to) {
+    await fetch(`${API}/dashboard?from=${from}&to=${to}`)
+      .then(response => { console.log(response); return response.json(); })
       .then(data => {
         const {
           expenses_data,
           earnings_data,
-          revenue,
-          percentage
         } = data
         console.log(data)
         this.setState({
           expensesData: expenses_data,
           earningsData: earnings_data,
-          revenue,
-          percentage
+          ...data,
+          isLoading: false
         })
       })
   }
+  fetchNew = async () => {
+    if (this.state.date.from !== '' && this.state.date.to !== '') {
+      await this.fetchData(this.state.date.from, this.state.date.to)
+    }
+  }
 
-  async componentDidMount() {
-    await this.fetchData()
+  setDate = async (type, date) => {
+
+
+    if (type == 'to') {
+      this.setState({
+        date: { to: date, from: this.state.date.from }
+      }, () => {
+        this.fetchNew()
+      })
+    } else {
+      this.setState({
+        date: { from: date, to: this.state.date.to }
+      }, () => {
+        this.fetchNew()
+      })
+    }
+
+
+  }
+
+  PaymentGateWay = (card) => {
+    return (<div class="col-lg-2 col-md-3 col-sm-12" style={{
+      marginBottom: '30px',
+      maxWidth: '335px',
+      marginLeft: '1%',
+      boxShadow: "0px 0px 36px -23px rgba(0,0,0,0.55)",
+      height: '128px', backgroundColor: 'white', borderRadius: 10,
+      paddingTop: 23,
+      paddingLeft: 25,
+      paddingRight: 25
+    }}>
+      <h1 style={{
+        fontSize: 20,
+        fontWeight: 500,
+        marginBottom: 0
+      }}><img src={require("assets/icons/credit card.svg")} width="19px" height="19px" />  {card.name}</h1>
+      <div style={{
+        display: 'flex',
+        marginTop: '19px'
+      }}>
+        <h1 style={{
+          fontSize: 25,
+        }}>{card.amount} EGP</h1>
+
+      </div>
+
+    </div>)
   }
 
   render() {
-    const { expensesData, earningsData, percentage } = this.state
+    const { expensesData, earningsData, percentage_earned, revenue, dates, percentage_spent, isLoading } = this.state
+
+    if (isLoading) return ''
+
+    const options = dates.map(date => ({ label: date, value: date }))
+
+    const colourStyles = {
+      control: styles => ({ ...styles, backgroundColor: 'white', width: '240px', margin: 'auto', marginLeft: 10, color: '#27293D' }),
+    };
+
     return (
       <>
         <div className="content" style={{ padding: "78px 30px 30px 30px" }}>
+          <div class="col-12 row">
+            <h1 style={{ width: '100%', textAlign: 'center' }}> {moment(this.state.date.from).format("DD, MMM")} - {moment(this.state.date.to).format("DD, MMM")}</h1>
 
+            <div style={{ width: '100%', textAlign: 'center', padding: 20 }}>
+              <Select label="From" styles={colourStyles} options={options} onChange={e => this.setDate('from', e.value)} />
+              <Select label="To" styles={colourStyles} options={options} onChange={e => this.setDate('to', e.value)} />
+              {/* <select class="custom-select" style={{ width: '120px', margin: 'auto', marginLeft: 10, color: '#27293D' }}>
+                <option selected>To</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+              </select> */}
+            </div>
+
+            <div style={{
+              marginBottom: '30px',
+              maxWidth: '335px',
+              boxShadow: "0px 0px 36px -23px rgba(0,0,0,0.55)",
+              height: '128px', backgroundColor: 'white', borderRadius: 10,
+              paddingTop: 23,
+              paddingLeft: 25,
+              paddingRight: 25
+            }} class="col-lg-3 col-md-6 col-sm-12">
+              <h1 style={{
+                fontSize: 20,
+                fontWeight: 500,
+                marginBottom: 0
+              }}><img src={require("assets/icons/revenue.svg")} width="19px" height="19px" />  Revenue</h1>
+              <div style={{
+                display: 'flex',
+                marginTop: '19px'
+              }} >
+                <h1 class="col-7" style={{
+                  fontSize: 25,
+                }}>{revenue} EGP</h1>
+                <span class="col-6" >
+
+                  <div class="row">
+                    {percentage_earned >= 85 ?
+                      <img src={require("assets/icons/tick mark.svg")} width="32px" height="32px" />
+                      :
+                      <img src={require("assets/icons/x mark.svg")} width="32px" height="32px" />
+                    }
+
+                    <p style={{
+                      color: percentage_earned >= 85 ? '#79DF92' : '#F25555',
+                      marginLeft: '5px',
+                      fontWeight: 600,
+                      fontSize: '20px'
+                    }}>{percentage_earned}%</p>
+                  </div>
+
+                  <p style={{ fontSize: 12, color: '#9A9A9A' }}>of total earnings</p>
+                </span>
+              </div>
+
+            </div>
+
+            {
+              Object.entries(earningsData.accounts).map(([name, amount]) => {
+                return this.PaymentGateWay({ name, amount })
+              })
+            }
+
+          </div>
           <Row>
             <Col lg="6">
               {!!earningsData.bar &&
@@ -151,7 +285,7 @@ class Dashboard extends React.Component {
                       {expensesData.total_expenses}
                       <span style={{ fontSize: 15 }}> EGP</span>
 
-                      <span style={{ fontSize: '16px', color: '#F25555', fontWeight: 500 }}> ({percentage}%)</span>
+                      <span style={{ fontSize: '16px', color: '#F25555', fontWeight: 500 }}> ({percentage_spent}%)</span>
                     </CardTitle>
                   </CardHeader>
                   <CardBody>
@@ -186,7 +320,7 @@ class Dashboard extends React.Component {
             </Col>
           </Row>
           <Row>
-            <Col lg="6" md="6">
+            <Col lg="6" md="12">
               <Card>
                 <CardHeader>
                   <CardTitle tag="h4" style={{ margin: 0 }}>Expenses Details</CardTitle>
@@ -217,7 +351,7 @@ class Dashboard extends React.Component {
                 </CardBody>
               </Card>
             </Col>
-            <Col lg="6" md="6">
+            <Col lg="6" md="12">
               <Card>
                 <CardHeader>
                   <CardTitle tag="h4" style={{ margin: 0 }}>Expenses Details</CardTitle>

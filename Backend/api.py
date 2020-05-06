@@ -17,7 +17,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 cors = CORS(app, resources={
             r"/api/*": {"origins": "*"}})
 
-xls = pd.ExcelFile("E:/Projects/Finance-Organizer/finance.xlsx")
+xls = pd.ExcelFile("E:/Projects/Finance-Organizer/Finance.xlsx")
 
 file = pd.read_excel(xls, sheet_name="Input", index_col="Date")
 
@@ -27,7 +27,7 @@ def get_earnings_data(from_date, to_date):
     conversion_rate_USD = 15.6
     table_income = {}
     accounts = {}
-    table_rows=[]
+    table_rows = []
     total_income = 0
     # want to come out with an income table
     for date, row in data.iterrows():
@@ -58,13 +58,13 @@ def get_earnings_data(from_date, to_date):
                 accounts[account.lower().capitalize()] = income
 
             date = f"{moment.date(date).format('DD/MM')} ({moment.date(date).format('dddd')})"
-            
-            filtered_row ={}
+
+            filtered_row = {}
             collected_row = {
-                'Date':date,
+                'Date': date,
                 'Client Name': row['Comments (Subcategories)'],
-                'Amount':income,
-                'Category':row['Category'],
+                'Amount': income,
+                'Category': row['Category'],
                 'Payment Gateway': row['Account'],
                 'Description/Notes': row['Description']
             }
@@ -73,11 +73,11 @@ def get_earnings_data(from_date, to_date):
                 value = collected_row[key]
                 if type(value) != str and isinstance(value, datetime) == False:
                     if math.isnan(value) == False:
-                        print(key , value)
+                        print(key, value)
                         filtered_row[key] = collected_row[key]
                 else:
                     filtered_row[key] = collected_row[key]
-            
+
             table_rows.append(filtered_row)
 
     total_income = round(total_income)
@@ -86,7 +86,7 @@ def get_earnings_data(from_date, to_date):
         bar['clients'].append(key)
         bar['amounts'].append(table_income[key])
 
-    return {'bar': bar, 'accounts': accounts, 'total_income': total_income, 'table':table_rows}
+    return {'bar': bar, 'accounts': accounts, 'total_income': total_income, 'table': table_rows}
 
 
 def get_expenses_data(from_date, to_date):
@@ -103,7 +103,7 @@ def get_expenses_data(from_date, to_date):
     heatmap_object = {}
     days = set({})
     last_date_processed = None
-    month_name = moment.date('2020-01-01').format('MMMM')
+    # month_name = moment.date('2020-01-01').format('MMMM')
     for date, row in data.iterrows():
 
         # Filter income only
@@ -131,7 +131,15 @@ def get_expenses_data(from_date, to_date):
                     # addition that expense amount to the total expenses per that day (theyre the same day)
                     total_amount_for_day += their_expense
                     print(f"Date {my_day}, found = ", their_expense)
-            sub_categories.append(sub_category)
+
+            if type(sub_category) != str:
+                if math.isnan(sub_category) == False:
+                    sub_categories.append(sub_category)
+                else:
+                    sub_categories.append('')
+            else:
+                sub_categories.append(sub_category)
+
             categories.append(category)
             print(
                 f"Total Amount for Day: {my_day} is {total_amount_for_day} EGP")
@@ -145,15 +153,18 @@ def get_expenses_data(from_date, to_date):
 
             heatmap_object[date] = total_amount_for_day
 
-            table_expenses[category] = amount
+            try:
+                table_expenses[category] += amount
+            except:
+                table_expenses[category] = amount
 
             total_expenses += amount
-            
-            filtered_row ={}
+
+            filtered_row = {}
             collected_row = {
-                'Date':date,
-                'Category':row['Category'],
-                'Amount':amount,
+                'Date': date,
+                'Category': row['Category'],
+                'Amount': amount,
                 'Payment Gateway': row['Account'],
                 'Comments': row['Comments (Subcategories)'],
                 'Description/Notes': row['Description']
@@ -163,7 +174,7 @@ def get_expenses_data(from_date, to_date):
                 value = collected_row[key]
                 if type(value) != str:
                     if math.isnan(value) == False:
-                        print(key , value)
+                        print(key, value)
                         filtered_row[key] = collected_row[key]
                 else:
                     filtered_row[key] = collected_row[key]
@@ -179,7 +190,7 @@ def get_expenses_data(from_date, to_date):
         bar['categories'].append(key)
         bar['amounts'].append(table_expenses[key])
 
-    return {'sub_categories': sub_categories, 'bar': bar, 'table': table_rows,'total_expenses': total_expenses}
+    return {'sub_categories': sub_categories, 'bar': bar, 'table': table_rows, 'total_expenses': total_expenses}
 
 
 @app.route('/api/earnings', methods=['GET'])
@@ -208,7 +219,15 @@ def get_all_data():
     # calculate additional fields
     total_expenses = expenses_data['total_expenses']
     total_income = earnings_data['total_income']
-    percentage = round((total_expenses/total_income) * 100)
+    percentage_spent = round((total_expenses/total_income) * 100)
+    percentage_earned = 100-percentage_spent
     revenue = total_income-total_expenses
 
-    return {'expenses_data': expenses_data, 'earnings_data': earnings_data, 'percentage': percentage, 'revenue': revenue}
+    return {
+        'expenses_data': expenses_data,
+        'earnings_data': earnings_data,
+        'percentage_earned': percentage_earned,
+        'percentage_spent': percentage_spent,
+        'revenue': revenue,
+        'dates': [moment.date(timestamp).format('YYYY-MM-DD') for timestamp in list(file.index)]
+    }

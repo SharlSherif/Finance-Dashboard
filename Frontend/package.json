@@ -8,6 +8,7 @@
     "chart.js": "2.9.3",
     "classnames": "2.2.6",
     "history": "4.10.1",
+    "moment": "^2.25.3",
     "node-sass": "4.13.1",
     "perfect-scrollbar": "1.5.0",
     "prop-types": "15.7.2",
@@ -18,6 +19,7 @@
     "react-notification-alert": "0.0.12",
     "react-router-dom": "5.1.2",
     "react-scripts": "3.4.0",
+    "react-select": "^3.1.0",
     "reactstrap": "8.4.1"
   },
   "scripts": {
