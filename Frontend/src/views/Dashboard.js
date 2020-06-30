@@ -1,54 +1,22 @@
-/*!
-
-=========================================================
-* Black Dashboard React v1.1.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/black-dashboard-react
-* Copyright 2020 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/black-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React from "react";
-// nodejs library that concatenates classes
-import classNames from "classnames";
 // react plugin used to create charts
-import { Line, Bar } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import Select from 'react-select'
 import moment from 'moment'
 // reactstrap components
 import {
-  Button,
-  ButtonGroup,
   Card,
   CardHeader,
   CardBody,
   CardTitle,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  UncontrolledDropdown,
-  Label,
-  FormGroup,
-  Input,
   Table,
   Row,
   Col,
-  UncontrolledTooltip
 } from "reactstrap";
 
 // core components
 import {
-  chartExample1,
-  chartExample2,
   chartExample3,
-  chartExample4
 } from "variables/charts.js";
 
 const API = 'http://localhost:5000/api'
@@ -172,12 +140,6 @@ class Dashboard extends React.Component {
             <div style={{ width: '100%', textAlign: 'center', padding: 20 }}>
               <Select label="From" styles={colourStyles} options={options} onChange={e => this.setDate('from', e.value)} />
               <Select label="To" styles={colourStyles} options={options} onChange={e => this.setDate('to', e.value)} />
-              {/* <select class="custom-select" style={{ width: '120px', margin: 'auto', marginLeft: 10, color: '#27293D' }}>
-                <option selected>To</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
-              </select> */}
             </div>
 
             <div style={{
