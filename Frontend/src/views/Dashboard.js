@@ -17,7 +17,7 @@ import {
 // core components
 import {
   chartExample3,
-} from "variables/charts.js";
+} from "../variables/charts.js";
 
 const API = 'http://localhost:5000/api'
 class Dashboard extends React.Component {
@@ -74,7 +74,7 @@ class Dashboard extends React.Component {
   setDate = async (type, date) => {
 
 
-    if (type == 'to') {
+    if (type === 'to') {
       this.setState({
         date: { to: date, from: this.state.date.from }
       }, () => {
@@ -106,7 +106,7 @@ class Dashboard extends React.Component {
         fontSize: 20,
         fontWeight: 500,
         marginBottom: 0
-      }}><img src={require("assets/icons/credit card.svg")} width="19px" height="19px" />  {card.name}</h1>
+      }}><img src={require("../assets/icons/credit card.svg")} width="19px" height="19px" alt="Credit Card" />  {card.name}</h1>
       <div style={{
         display: 'flex',
         marginTop: '19px'
@@ -155,7 +155,7 @@ class Dashboard extends React.Component {
                 fontSize: 20,
                 fontWeight: 500,
                 marginBottom: 0
-              }}><img src={require("assets/icons/revenue.svg")} width="19px" height="19px" />  Revenue</h1>
+              }}><img src={require("../assets/icons/revenue.svg")} width="19px" height="19px" alt="Revenue"/>  Revenue</h1>
               <div style={{
                 display: 'flex',
                 marginTop: '19px'
@@ -167,9 +167,9 @@ class Dashboard extends React.Component {
 
                   <div class="row">
                     {percentage_earned >= 85 ?
-                      <img src={require("assets/icons/tick mark.svg")} width="32px" height="32px" />
+                      <img src={require("../assets/icons/tick mark.svg")} width="32px" height="32px" alt="Tick Mark" />
                       :
-                      <img src={require("assets/icons/x mark.svg")} width="32px" height="32px" />
+                      <img src={require("../assets/icons/x mark.svg")} width="32px" height="32px" alt="X Mark" />
                     }
 
                     <p style={{
@@ -201,7 +201,7 @@ class Dashboard extends React.Component {
                   <CardHeader>
                     <h5 className="card-category">Earnings</h5>
                     <CardTitle tag="h3" style={{ margin: 0 }}>
-                      <img src={require("assets/icons/earning.svg")} width="28.45px" />{" "}
+                      <img src={require("../assets/icons/earning.svg")} width="28.45px" alt="Earnings"/>{" "}
                       {earningsData.total_income}
                       <span style={{ fontSize: 15 }}> EGP</span>
                     </CardTitle>
@@ -243,7 +243,7 @@ class Dashboard extends React.Component {
                   <CardHeader>
                     <h5 className="card-category">Expenses</h5>
                     <CardTitle tag="h3" style={{ margin: 0 }}>
-                      <img src={require("assets/icons/expense.svg")} width="28.45px" />{" "}
+                      <img src={require("../assets/icons/expense.svg")} width="28.45px" alt="Expenses"/>{" "}
                       {expensesData.total_expenses}
                       <span style={{ fontSize: 15 }}> EGP</span>
 

@@ -2,7 +2,7 @@ import React from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 // javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from "perfect-scrollbar";
-import routes from "routes.js";
+import routes from "../../routes.js";
 var ps;
 
 class Admin extends React.Component {

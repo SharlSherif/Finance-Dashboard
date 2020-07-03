@@ -11,13 +11,13 @@ from helpers import *
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy   dog'
+app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy dog'
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 cors = CORS(app, resources={
             r"/api/*": {"origins": "*"}})
 
-xls = pd.ExcelFile("E:/Projects/Finance-Organizer/Finance.xlsx")
+xls = pd.ExcelFile("E:/Projects/Finance-Organizer/finance.xlsx")
 
 file = pd.read_excel(xls, sheet_name="Input", index_col="Date")
 
@@ -29,6 +29,7 @@ def get_earnings_data(from_date, to_date):
     accounts = {}
     table_rows = []
     total_income = 0
+    print(data)
     # want to come out with an income table
     for date, row in data.iterrows():
         # Filter income only
@@ -79,7 +80,6 @@ def get_earnings_data(from_date, to_date):
                     filtered_row[key] = collected_row[key]
 
             table_rows.append(filtered_row)
-
     total_income = round(total_income)
     bar = {'clients': [], 'amounts': []}
     for key in table_income:
@@ -105,8 +105,7 @@ def get_expenses_data(from_date, to_date):
     last_date_processed = None
     # month_name = moment.date('2020-01-01').format('MMMM')
     for date, row in data.iterrows():
-
-        # Filter income only
+        # Filter expenses only
         if row['Type'] == 'Expense' and row['Category'] != 'Repaid':
             if last_date_processed != None:
                 dates_in_between = get_difference_between_dates(
@@ -121,7 +120,7 @@ def get_expenses_data(from_date, to_date):
             description = row['Description']
             amount = currency_conversion(row['Amount'], row['Currency'])
             my_day = date.day
-            total_amount_for_day = amount
+            total_amount_for_day = 0
             for their_date, their_row in data.iterrows():
                 # make sure that it's searching only in the "Expenses" row type.
                 if their_row['Type'] == 'Expense' and their_date.day == my_day:
@@ -131,6 +130,9 @@ def get_expenses_data(from_date, to_date):
                     # addition that expense amount to the total expenses per that day (theyre the same day)
                     total_amount_for_day += their_expense
                     print(f"Date {my_day}, found = ", their_expense)
+
+            if total_amount_for_day == 0:
+                total_amount_for_day = amount
 
             if type(sub_category) != str:
                 if math.isnan(sub_category) == False:
@@ -143,7 +145,6 @@ def get_expenses_data(from_date, to_date):
             categories.append(category)
             print(
                 f"Total Amount for Day: {my_day} is {total_amount_for_day} EGP")
-            print(date)
             print(moment.date(date).format('ddd'))
             last_date_processed = moment.date(date).format('YYYY-MM-DD')
             # ?day in text (eg. Mon, Sun)
@@ -182,8 +183,7 @@ def get_expenses_data(from_date, to_date):
             table_rows.append(filtered_row)
 
     total_expenses = round(total_expenses)
-    print(heatmap_object)
-    print("Total Expenses is ", total_expenses)
+    print("Total Expenses are ", total_expenses)
 
     bar = {'categories': [], 'amounts': []}
     for key in table_expenses:
@@ -213,15 +213,23 @@ def get_expenses():
 def get_all_data():
     from_date = request.args.get('from')
     to_date = request.args.get('to')
+    # calculate these values if found
+    percentage_spent =0
+    percentage_earned =0
+    revenue=0
     # calculate the data
     expenses_data = get_expenses_data(from_date, to_date)
     earnings_data = get_earnings_data(from_date, to_date)
     # calculate additional fields
     total_expenses = expenses_data['total_expenses']
     total_income = earnings_data['total_income']
-    percentage_spent = round((total_expenses/total_income) * 100)
-    percentage_earned = 100-percentage_spent
-    revenue = total_income-total_expenses
+
+    if total_expenses > 0 and total_income > 0:
+        percentage_spent = round((total_expenses/total_income) * 100)
+        percentage_earned = 100-percentage_spent
+    
+    if total_income > 0:
+        revenue = total_income-total_expenses
 
     return {
         'expenses_data': expenses_data,

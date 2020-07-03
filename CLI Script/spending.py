@@ -165,7 +165,7 @@ def generate_heatmap(heatmap_object, total_expenses):
     ax = sns.heatmap(structured, annot=True, fmt='g', square=True)
     sns.set(font_scale=1.2)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=0)
-    ax.get_figure().savefig("E:/Projects/Finance-Organizer/heatmap.pdf")
+    ax.get_figure().savefig("./heatmap.pdf")
 
 
 spending_data(file)

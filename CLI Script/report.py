@@ -77,7 +77,6 @@ class income_report:
                 except:
                     accounts[account.lower().capitalize()] = income
 
-        print(accounts)
         bar = {'clients': [], 'amounts': []}
         for key in table_income:
             bar['clients'].append(key)
